@@ -12,6 +12,7 @@ from dictionary_object import DictionaryNode
 #from nltk.corpus import stopwords 
 
 dictionary = dict()
+term_doc_frequency = dict()
 collection = []
 
 def process_documents(file_path, dictionary_file, postings_file):
@@ -20,13 +21,17 @@ def process_documents(file_path, dictionary_file, postings_file):
             continue
         new_file_path = file_path + filename
         file_name = int(filename)
-        process_document(new_file_path, file_name)
+        term_frequency_table = process_document(new_file_path)
+        update_dictionary(term_frequency_table, file_name)
+        update_term_document_frequency(term_frequency_table)
         collection.append(file_name)
+    print (dictionary)
+    print (term_doc_frequency)
     #write_to_disk(dictionary, dictionary_file, postings_file, files)
 
 # process_document processes the given file and computes a term frequency 
 # table for that file
-def process_document(file, doc_ID):
+def process_document(file):
     term_frequency_table = dict()
 
     with open(file, mode="r") as doc:
@@ -37,9 +42,6 @@ def process_document(file, doc_ID):
                     if term not in term_frequency_table:
                         term_frequency_table[term] = 0
                     term_frequency_table[term] += 1
-
-    update_dictionary(term_frequency_table, doc_ID)
-    print(dictionary)
     return term_frequency_table
 
 # update_dictionary takes the term frequency table as well as the doc id
@@ -48,10 +50,15 @@ def process_document(file, doc_ID):
 def update_dictionary(term_frequency_table, doc_ID):
     for term in term_frequency_table:
         if term not in dictionary:
-            DictionaryNode(term, 0)
             dictionary[term] = []
         postings_element = (doc_ID, term_frequency_table[term])
         dictionary[term].append(postings_element)
+
+def update_term_document_frequency(term_frequency_table):
+    for term in term_frequency_table:
+        if term not in term_doc_frequency:
+            term_doc_frequency[term] = 0
+        term_doc_frequency[term] += 1
 
 def write_to_disk(dictionary, dictionary_file, postings_file, files):
     dict_to_disk = write_post_to_disk(dictionary, postings_file)
@@ -101,5 +108,4 @@ if directory_of_documents == None or dictionary_file == None or postings_file ==
 
 process_documents(directory_of_documents, dictionary_file, postings_file)
 '''
-
-process_document("1", 1)
+process_documents("test/", "", "")
