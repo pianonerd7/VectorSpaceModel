@@ -21,7 +21,6 @@ def process_documents(file_path, dictionary_file, postings_file):
         term_frequency_table = process_document(new_file_path)
         update_dictionary(term_frequency_table, file_name)
         collection.append(file_name)
-    print (dictionary)
     write_to_disk(dictionary_file, postings_file)
 
 # process_document processes the given file and computes a term frequency 
@@ -67,17 +66,13 @@ def write_post_to_disk(dictionary, postings_file):
 
 def disk_to_memory(dictionary_file):
     with open(dictionary_file, mode="rb") as df:
-        dictt = pickle.load(df)
-        print (dictt)
-        return dictt
-    
-    #training_data = pickle.load(open(file(dictionary_file), 'rb'))
+        return pickle.load(df)
 
 def printDict(dictionary):
     for key in dictionary:
         k = key.term + ", " + str(key.frequency)
         print (k, dictionary[key])
-'''
+
 def usage():
     print ("usage: " + sys.argv[0] + " -i directory-of-documents -d dictionary-file -p postings-file")
 
@@ -101,6 +96,3 @@ if directory_of_documents == None or dictionary_file == None or postings_file ==
     sys.exit(2)
 
 process_documents(directory_of_documents, dictionary_file, postings_file)
-'''
-process_documents("test/", "dict", "post")
-disk_to_memory("dict")
