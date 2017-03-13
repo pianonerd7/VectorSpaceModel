@@ -1,6 +1,0 @@
-Dictionary - 
-Can create another data structure to represent every dictionary node, 
-but want to keep it simple. Another alternative is to use the tuple
-data structure, but tuples in python are immutable, and since we will be doing
-a lot of writing and updating, that seems very inefficient. Resorted to using
-a list of size 2 to represent each dictionary entry. 
