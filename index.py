@@ -1,6 +1,5 @@
 #!/usr/bin/python
-from nltk import sent_tokenize, word_tokenize, PorterStemmer
-import string
+from nltk import sent_tokenize, word_tokenize
 import os
 import getopt
 import sys
@@ -8,22 +7,23 @@ import re
 from node import Node
 import json
 import pickle
+from utility import *
 
 dictionary = dict()
 collection = []
 
 def process_documents(file_path, dictionary_file, postings_file):
-    for filename in os.listdir(file_path):
-        if filename == ".DS_Store":
-            continue
-        new_file_path = file_path + filename
-        file_name = int(filename)
+    print('building index...')
+    all_files = filter(lambda filename: filename != ".DS_Store", os.listdir(file_path))
+    collection = list(map(int, all_files))
+    collection.sort()
+    for filename in collection:
+        new_file_path = file_path + str(filename)
         term_frequency_table = process_document(new_file_path)
-        update_dictionary(term_frequency_table, file_name)
-        collection.append(file_name)
+        update_dictionary(term_frequency_table, filename)
     write_to_disk(dictionary_file, postings_file)
 
-# process_document processes the given file and computes a term frequency 
+# process_document processes the given file and computes a term frequency
 # table for that file
 def process_document(file):
     term_frequency_table = dict()
@@ -32,14 +32,16 @@ def process_document(file):
         for line in doc:
             for sent in sent_tokenize(line):
                 for word in word_tokenize(sent):
-                    term = PorterStemmer().stem(word.lower())
+                    term = normalize(word)
+                    if term == empty_string:
+                        continue
                     if term not in term_frequency_table:
                         term_frequency_table[term] = 0
                     term_frequency_table[term] += 1
     return term_frequency_table
 
 # update_dictionary takes the term frequency table as well as the doc id
-# and updates the global dictionary after processing each document in 
+# and updates the global dictionary after processing each document in
 # the collection
 def update_dictionary(term_frequency_table, doc_ID):
     for term in term_frequency_table:
@@ -50,19 +52,19 @@ def update_dictionary(term_frequency_table, doc_ID):
 
 def write_to_disk(dictionary_file, postings_file):
     dict_to_disk = write_post_to_disk(dictionary, postings_file)
-    dict_to_disk["ALL_FILES"] = collection
+    dict_to_disk[ALL_FILES] = collection
     write_dict_to_disk(dict_to_disk, dictionary_file)
 
 def write_dict_to_disk(dict_to_disk, dictionary_file):
     with open(dictionary_file, mode="wb") as df:
         pickle.dump(dict_to_disk, df)
-        
+
 def write_post_to_disk(dictionary, postings_file):
     dict_to_disk = dict()
     with open(postings_file, mode="wb") as pf:
         for key in dictionary:
             dict_to_disk[key] = Node(key, len(dictionary[key]), pf.tell(), pf.write(pickle.dumps(dictionary[key])))
-    return dict_to_disk 
+    return dict_to_disk
 
 def disk_to_memory(dictionary_file):
     with open(dictionary_file, mode="rb") as df:

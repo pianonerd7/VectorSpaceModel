@@ -3,6 +3,7 @@ import sys
 import pickle
 from queryParser import *
 from node import Node
+from utility import *
 import math
 
 def read_dictionary_to_memory(dictionary_file_path):
@@ -51,7 +52,7 @@ def process_query(infix_arr, dictionary, posting_file_path):
     return final_result
 
 def not_term_operator(dictionary, term_in_docs):
-    all_documents = dictionary["ALL_FILES"]
+    all_documents = dictionary[ALL_FILES]
     result_set = set(all_documents) - set(term_in_docs)
     return list(result_set)
 
@@ -140,7 +141,7 @@ def process_query_rec(infix_arr, dictionary, posting_file_path):
                     result_cache=[]
                     break
     return result_cache, final_result
-    
+
 def and_operator(list1, list2):
     skip_interval1 = int(math.sqrt(len(list1)))
     skip_interval2 = int(math.sqrt(len(list2)))
@@ -192,7 +193,7 @@ def or_operator(list1, list2):
         elif list1[ptr1] > list2[ptr2]:
             result.append(list2[ptr2])
             ptr2 += 1
-    
+
     if ptr1 < len(list1):
         result = result + list1[ptr1:]
     elif ptr2 < len(list2):
