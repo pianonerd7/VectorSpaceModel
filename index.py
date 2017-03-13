@@ -8,56 +8,50 @@ import re
 from node import Node
 import json
 import pickle
+from dictionary_object import DictionaryNode
 #from nltk.corpus import stopwords 
 
-# Find list of unique tokens in all file path with respect to its document ID
+dictionary = dict()
+collection = []
+
 def process_documents(file_path, dictionary_file, postings_file):
-    tables = []
-    files = []
     for filename in os.listdir(file_path):
         if filename == ".DS_Store":
             continue
         new_file_path = file_path + filename
-        tables.append(process_document(new_file_path, int(filename)))
-        files.append(int(filename))
-    dictionary = merge_tables(tables)
-    write_to_disk(dictionary, dictionary_file, postings_file, files)
+        file_name = int(filename)
+        process_document(new_file_path, file_name)
+        collection.append(file_name)
+    #write_to_disk(dictionary, dictionary_file, postings_file, files)
 
+# process_document processes the given file and computes a term frequency 
+# table for that file
 def process_document(file, doc_ID):
-    content = open(file, "r").read()
+    term_frequency_table = dict()
 
-    terms = []
-    with open(file, mode="r") as f:
-        for line in f:
+    with open(file, mode="r") as doc:
+        for line in doc:
             for sent in sent_tokenize(line):
                 for word in word_tokenize(sent):
-                    #if word not in stopwords.words("english"):
-                    #if word.isdigit() == False:
-                    terms.append(PorterStemmer().stem(word.lower()))
-    
-    table = dict()
+                    term = PorterStemmer().stem(word.lower())
+                    if term not in term_frequency_table:
+                        term_frequency_table[term] = 0
+                    term_frequency_table[term] += 1
 
-    for word in terms:
-        if word not in table:
-            table[word] = doc_ID
+    update_dictionary(term_frequency_table, doc_ID)
+    print(dictionary)
+    return term_frequency_table
 
-    return table
-
-def merge_tables(table_array):
-    dictionary = dict()
-    for table in table_array:
-        for key in table:
-            if key not in dictionary:
-                dictionary[key] = []
-            dictionary[key].append(table[key])
-    return sort_dictionary(dictionary)
-
-def sort_dictionary(dictionary):
-    new_dictionary = dict()
-    for key in dictionary:
-        posting = dictionary[key]
-        new_dictionary[key] = sorted(posting)
-    return new_dictionary
+# update_dictionary takes the term frequency table as well as the doc id
+# and updates the global dictionary after processing each document in 
+# the collection
+def update_dictionary(term_frequency_table, doc_ID):
+    for term in term_frequency_table:
+        if term not in dictionary:
+            DictionaryNode(term, 0)
+            dictionary[term] = []
+        postings_element = (doc_ID, term_frequency_table[term])
+        dictionary[term].append(postings_element)
 
 def write_to_disk(dictionary, dictionary_file, postings_file, files):
     dict_to_disk = write_post_to_disk(dictionary, postings_file)
@@ -82,7 +76,7 @@ def printDict(dictionary):
     for key in dictionary:
         k = key.term + ", " + str(key.frequency)
         print (k, dictionary[key])
-
+'''
 def usage():
     print ("usage: " + sys.argv[0] + " -i directory-of-documents -d dictionary-file -p postings-file")
 
@@ -106,3 +100,6 @@ if directory_of_documents == None or dictionary_file == None or postings_file ==
     sys.exit(2)
 
 process_documents(directory_of_documents, dictionary_file, postings_file)
+'''
+
+process_document("1", 1)
