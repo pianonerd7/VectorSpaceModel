@@ -1,0 +1,6 @@
+reuters/*
+test/*
+.pylintrc
+__pycache__
+.vscode
+*.pyc
