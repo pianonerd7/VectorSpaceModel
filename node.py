@@ -3,17 +3,17 @@
 # to the posting in disk
 
 class Node:
-    def __init__(self, term, frequency, pointer, size):
+    def __init__(self, term, doc_frequency, pointer, size):
         self.term = term
-        self.frequency = frequency
+        self.doc_frequency = doc_frequency
         self.pointer = pointer
         self.length = size
 
     def get_term(self):
         return self.term
     
-    def get_frequency(self):
-        return self.frequency
+    def get_doc_frequency(self):
+        return self.doc_frequency
 
     def get_pointer(self):
         return self.pointer
@@ -25,4 +25,4 @@ class Node:
         self.length = length
     
     def print_node(self):
-        print (self.term, self.frequency, self.pointer, self.length)
+        print (self.term, self.doc_frequency, self.pointer, self.length)
