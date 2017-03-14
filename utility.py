@@ -4,7 +4,6 @@ import string
 # Contains some constant variables and term-normalization function.
 
 empty_string = ''
-ALL_FILES = "ALL_FILES"
 
 stemmer = PorterStemmer()
 punctuations = ["''", '..', '--']

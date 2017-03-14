@@ -52,7 +52,6 @@ def update_dictionary(term_frequency_table, doc_ID):
 
 def write_to_disk(dictionary_file, postings_file):
     dict_to_disk = write_post_to_disk(dictionary, postings_file)
-    dict_to_disk[ALL_FILES] = collection
     write_dict_to_disk(dict_to_disk, dictionary_file)
 
 def write_dict_to_disk(dict_to_disk, dictionary_file):

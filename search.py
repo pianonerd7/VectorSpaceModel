@@ -12,21 +12,22 @@ def read_dictionary_to_memory(dictionary_file_path):
         dictionary = pickle.load(df)
     return dictionary
 
-def find_posting_in_disk(dictionary, term, posting_file_path):
-    with open(posting_file_path, mode="rb") as pf:
-        if term in dictionary:
-            pf.seek(dictionary[term].get_pointer())
-            return pickle.loads(pf.read(dictionary[term].length))
-        else:
-            return []
+def find_posting_in_disk(dictionary, term, postings):
+    if term in dictionary:
+        offset = dictionary[term].get_pointer() - postings.tell()
+        postings.seek(offset, 1)
+        return pickle.loads(postings.read(dictionary[term].length))
+    else:
+        return []
 
 def process_queries(dictionary_file, postings_file, query_file_path, output_file_of_results):
     dictionary = read_dictionary_to_memory(dictionary_file)
     infix_arr = query_file_to_infix(query_file_path)
 
     results = []
-    for infix in infix_arr:
-        results.append(process_query(infix, dictionary, postings_file))
+    with open(postings_file, 'rb') as postings:
+        for infix in infix_arr:
+            results.append(process_query(infix, dictionary, postings))
     write_to_output(results, output_file_of_results)
 
 def write_to_output(results, output_file_of_results):
@@ -40,25 +41,20 @@ def format_result(result_list):
         result_str = result_str + str(item) + " "
     return result_str
 
-def process_query(infix_arr, dictionary, posting_file_path):
+def process_query(infix_arr, dictionary, postings):
     result_cache = infix_arr
     final_result = []
 
     if len(infix_arr) == 1:
-        return find_posting_in_disk(dictionary, infix_arr[0], posting_file_path)
+        return find_posting_in_disk(dictionary, infix_arr[0], postings)
 
     while len(result_cache) > 1:
-        result_cache, final_result = process_query_rec(result_cache, dictionary, posting_file_path)
+        result_cache, final_result = process_query_rec(result_cache, dictionary, postings)
     return final_result
 
-def not_term_operator(dictionary, term_in_docs):
-    all_documents = dictionary[ALL_FILES]
-    result_set = set(all_documents) - set(term_in_docs)
-    return list(result_set)
-
-def process_query_rec(infix_arr, dictionary, posting_file_path):
+def process_query_rec(infix_arr, dictionary, postings):
     if len(infix_arr) == 1:
-        return find_posting_in_disk(dictionary, infix_arr[0], posting_file_path)
+        return find_posting_in_disk(dictionary, infix_arr[0], postings)
 
     result_cache = infix_arr
     final_result = []
@@ -67,35 +63,13 @@ def process_query_rec(infix_arr, dictionary, posting_file_path):
         item = result_cache[i]
         if type(item) != list and item in OPERATORS:
             first = second = term = None
-            if item == "NOT":
-                if type(result_cache[i-1]) == str:
-                    term = find_posting_in_disk(dictionary, result_cache[i-1], posting_file_path)
-                else:
-                    term = result_cache[i-1]
-                temp_result = not_term_operator(dictionary, term)
-
-                new_cache = []
-                if i-1 > 0 or i + 1 < len(result_cache):
-                    wrap_list = [temp_result]
-                    new_cache = wrap_list
-                    if i - 1 > 0:
-                        new_cache = result_cache[:i-1] + wrap_list
-                    if i + 1 < len(result_cache):
-                        new_cache = new_cache + result_cache[i+1:]
-                    result_cache = new_cache
-                    break
-                else:
-                    final_result = temp_result
-                    result_cache = []
-                    break
-
             if item == "AND":
                 if type(result_cache[i-2]) == str:
-                    first = find_posting_in_disk(dictionary, result_cache[i-2], posting_file_path)
+                    first = find_posting_in_disk(dictionary, result_cache[i-2], postings)
                 else:
                     first = result_cache[i-2]
                 if type(result_cache[i-1]) == str:
-                    second = find_posting_in_disk(dictionary, result_cache[i-1], posting_file_path)
+                    second = find_posting_in_disk(dictionary, result_cache[i-1], postings)
                 else:
                     second = result_cache[i-1]
                 temp_result = and_operator(first, second)
@@ -117,11 +91,11 @@ def process_query_rec(infix_arr, dictionary, posting_file_path):
                 #result_cache = new_cache
             elif item == "OR":
                 if type(result_cache[i-2]) == str:
-                    first = find_posting_in_disk(dictionary, result_cache[i-2], posting_file_path)
+                    first = find_posting_in_disk(dictionary, result_cache[i-2], postings)
                 else:
                     first = result_cache[i-2]
                 if type(result_cache[i-1]) == str:
-                    second = find_posting_in_disk(dictionary, result_cache[i-1], posting_file_path)
+                    second = find_posting_in_disk(dictionary, result_cache[i-1], postings)
                 else:
                     second = result_cache[i-1]
                 temp_result = or_operator(first, second)
