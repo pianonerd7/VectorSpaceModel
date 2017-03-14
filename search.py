@@ -3,7 +3,6 @@ import sys
 import pickle
 from queryParser import *
 from node import Node
-from utility import *
 import math
 
 def read_dictionary_to_memory(dictionary_file_path):
