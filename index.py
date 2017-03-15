@@ -22,6 +22,7 @@ def process_documents(file_path, dictionary_file, postings_file):
         term_frequency_table = process_document(new_file_path)
         update_dictionary(term_frequency_table, filename)
     write_to_disk(dictionary_file, postings_file)
+    print('...index is done building')
 
 # process_document processes the given file and computes a term frequency
 # table for that file
@@ -52,6 +53,7 @@ def update_dictionary(term_frequency_table, doc_ID):
 
 def write_to_disk(dictionary_file, postings_file):
     dict_to_disk = write_post_to_disk(dictionary, postings_file)
+    dict_to_disk[COLLECTION_SIZE] = len(collection)
     write_dict_to_disk(dict_to_disk, dictionary_file)
 
 def write_dict_to_disk(dict_to_disk, dictionary_file):

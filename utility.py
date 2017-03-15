@@ -4,7 +4,7 @@ import string
 # Contains some constant variables and term-normalization function.
 
 empty_string = ''
-
+COLLECTION_SIZE = "COLLECTION_SIZE"
 stemmer = PorterStemmer()
 punctuations = ["''", '..', '--']
 
