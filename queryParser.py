@@ -3,7 +3,6 @@ from utility import *
 
 def parse_query(query_file_path):
     query_arr = query_from_file_to_array(query_file_path)
-    print (query_arr)
     return query_arr
 
 def query_from_file_to_array(query_file_path):
@@ -13,9 +12,15 @@ def query_from_file_to_array(query_file_path):
             query = line
             if line[-1:] == "\n":
                 query = line[:-1]
-            terms = map(normalize, word_tokenize(query))
-            terms = list(filter(lambda term: term != empty_string, terms))
-            queries.append(terms)
+            query_freq_table = dict()
+            for term in word_tokenize(query):
+                term = normalize(term)
+                if term == empty_string:
+                    continue
+                if term not in query_freq_table:
+                    query_freq_table[term] = 0
+                query_freq_table[term] += 1
+            queries.append(query_freq_table)
     return queries
 
 #parse_query("test/query")

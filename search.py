@@ -25,64 +25,45 @@ def find_posting_in_disk(dictionary, term, posting_file_path):
 def process_queries(dictionary_file, postings_file, file_of_queries, output_file_of_results):
     (dictionary, doc_length_table) = read_dictionary_to_memory(dictionary_file)
     queries = parse_query(file_of_queries)
+    results = []
     for query in queries:
-        process_query_ltc(dictionary, postings_file, query)
+        results.append(calculate_cosine_score(dictionary, doc_length_table, postings_file, query))
+        print()
+    write_to_output(results, output_file_of_results)
 
-def extract_docID(postings):
-    unique_docs = set()
-    for posting in postings:
-        unique_docs.add([pair[0] for pair in posting])
-    return unique_docs
-
-# process_query_ltc takes in a list of words that represents a query, and outputs the
-# ltc matrix
-def process_query_ltc(dictionary, postings, query):
-    ltc_matrix = []
-    posting = []
-    for word in query:
-        posting.append(find_posting_in_disk(dictionary, word, postings))
-    print (posting)
-    docs = extract_docID(posting)
-
-def get_freq_table_for_query(query):
-    query_freq_table = dict()
-    for word in query:
-        if word not in query_freq_table:
-            query_freq_table[word] = 0
-        query_freq_table[word] += 1
-    return query_freq_table
-
-# since the terms in the query_freq_table would never have a value of
-# 0, we can safely assume that math.log(0, 10) would never be an issue for us
-def calculate_log_tf(query_freq_table):
-    log_tf = dict()
-    for word in query_freq_table:
-        log_tf[word] = 1 + math.log(query_freq_table[word], 10)
-    return log_tf
-
-def calculate_idf_df(dictionary, postings, query):
-    idf_df = dict()
-
+def calculate_cosine_score(dictionary, doc_length_table, postings_file, query):
+    score_dictionary = dict()
     collection_size = dictionary[COLLECTION_SIZE]
-    for word in query:
-        idf_df[word] = math.log((collection_size/dictionary[word].get_doc_frequency()), 10)
+    for query_term, query_tf in query.items():
+        if query_term not in dictionary:
+            continue
+        query_df = dictionary[query_term].get_doc_frequency()
+        query_weight = calculate_query_weight(query_tf, query_df, collection_size)
+        postings = find_posting_in_disk(dictionary, query_term, postings_file)
 
-    return idf_df
+        for document in postings:
+            (doc_id, doc_tf) = document
+            doc_weight = calculate_log_tf(doc_tf)
+            if doc_id not in score_dictionary:
+                score_dictionary[doc_id] = 0
+            score_dictionary[doc_id] += query_weight * doc_weight
+    for (doc_id, score) in score_dictionary.items():
+        score_dictionary[doc_id] = score / doc_length_table[doc_id]
+    return sorted(score_dictionary, key=score_dictionary.get, reverse=True)[:10]
+    # Todo: Should change it to a maxheap instead
 
-def calculate_tfidf_query(log_tf, idf_df, query):
-    tfidf = dict()
+def calculate_query_weight(query_tf, query_df, collection_size):
+    query_log_tf = calculate_log_tf(query_tf)
+    query_idf = calculate_idf(collection_size, query_df)
+    return query_log_tf * query_idf
 
-    for word in query:
-        tfidf[word] = 0
-        if word in log_tf and word in idf_df:
-            tfidf[word] = log_tf[word] * idf_df[word]
+def write_to_output(results, output_file_of_results):
+    with open(output_file_of_results, mode="w") as of:
+        for result in results:
+            of.write(format_result(result) + "\n")
 
-def calculate_tfidf_document(log_tf, idf_df, query):
-    tfidf = dict()
-
-    for word in query:
-        cur_word = dict()
-        # if word in log_tf and word in idf_df:
+def format_result(result):
+    return ' '.join(list(map(str, result)))
 
 '''
 cosine_score:
@@ -101,6 +82,8 @@ for each document that appear in score_dictionary:
     update score
 // Rank:
 Find teh highest 10 scores in the score_dictionary
+
+Question: Should the length of document be the length of the log_tf vector?
 
 
 Document
@@ -168,4 +151,4 @@ if dictionary_file == None or postings_file == None or file_of_queries == None o
 process_queries(dictionary_file, postings_file, file_of_queries, output_file_of_results)
 '''
 
-process_queries("dict", "post", "query", "out")
+process_queries("dictionary.txt", "postings.txt", "query.txt", "out.txt")

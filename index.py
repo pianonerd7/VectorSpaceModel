@@ -30,7 +30,6 @@ def process_documents(file_path, dictionary_file, postings_file):
 # table for that file
 def process_document(file):
     term_frequency_table = dict()
-    doc_length = 0
 
     with open(file, mode="r") as doc:
         for line in doc:
@@ -42,7 +41,12 @@ def process_document(file):
                     if term not in term_frequency_table:
                         term_frequency_table[term] = 0
                     term_frequency_table[term] += 1
-                    doc_length += 1
+
+    doc_length = 0
+    for tf in term_frequency_table.values():
+        log_tf = calculate_log_tf(tf)
+        doc_length += log_tf * log_tf
+    doc_length = math.sqrt(doc_length)
     return (term_frequency_table, doc_length)
 
 # update_dictionary takes the term frequency table as well as the doc id
