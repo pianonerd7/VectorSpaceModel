@@ -85,6 +85,24 @@ def calculate_tfidf_document(log_tf, idf_df, query):
         # if word in log_tf and word in idf_df:
 
 '''
+cosine_score:
+initialize a score_dictionary to store the score of each document
+// Calculate score:
+for each term t in query frequency table:
+    fetch postings list for t
+    calculate its weight (tf_idf)
+    for each document in the postings:
+        calculate its weight (log_tf since df = 1)
+        update the score of the document in score_dictionary
+        (score_dictionary[document] += weight of t * weight of the document
+// Normalization:
+for each document that appear in score_dictionary:
+    normalized score = score[document] / length_of_document <- get from doc_length_table
+    update score
+// Rank:
+Find teh highest 10 scores in the score_dictionary
+
+
 Document
 
 log_tf
