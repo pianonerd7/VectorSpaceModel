@@ -16,17 +16,21 @@ def process_documents(file_path, dictionary_file, postings_file):
     all_files = filter(lambda filename: filename != ".DS_Store", os.listdir(file_path))
     collection = list(map(int, all_files))
     collection.sort()
+    doc_length_table = dict()
+
     for filename in collection:
         new_file_path = file_path + str(filename)
-        term_frequency_table = process_document(new_file_path)
+        (term_frequency_table, doc_length) = process_document(new_file_path)
         update_dictionary(term_frequency_table, filename)
-    write_to_disk(dictionary_file, postings_file, collection)
+        doc_length_table[filename] = doc_length
+    write_to_disk(dictionary_file, doc_length_table, postings_file, collection)
     print('...index is done building')
 
 # process_document processes the given file and computes a term frequency
 # table for that file
 def process_document(file):
     term_frequency_table = dict()
+    doc_length = 0
 
     with open(file, mode="r") as doc:
         for line in doc:
@@ -38,7 +42,8 @@ def process_document(file):
                     if term not in term_frequency_table:
                         term_frequency_table[term] = 0
                     term_frequency_table[term] += 1
-    return term_frequency_table
+                    doc_length += 1
+    return (term_frequency_table, doc_length)
 
 # update_dictionary takes the term frequency table as well as the doc id
 # and updates the global dictionary after processing each document in
@@ -50,14 +55,15 @@ def update_dictionary(term_frequency_table, doc_ID):
         postings_element = (doc_ID, term_frequency_table[term])
         dictionary[term].append(postings_element)
 
-def write_to_disk(dictionary_file, postings_file, collection):
+def write_to_disk(dictionary_file, doc_length_table, postings_file, collection):
     dict_to_disk = write_post_to_disk(dictionary, postings_file)
     dict_to_disk[COLLECTION_SIZE] = len(collection)
-    write_dict_to_disk(dict_to_disk, dictionary_file)
+    write_dict_to_disk(dict_to_disk, doc_length_table, dictionary_file)
 
-def write_dict_to_disk(dict_to_disk, dictionary_file):
+def write_dict_to_disk(dict_to_disk, doc_length_table, dictionary_file):
     with open(dictionary_file, mode="wb") as df:
-        pickle.dump(dict_to_disk, df)
+        data = [dict_to_disk, doc_length_table]
+        pickle.dump(data, df)
 
 def write_post_to_disk(dictionary, postings_file):
     dict_to_disk = dict()

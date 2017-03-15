@@ -7,9 +7,12 @@ from utility import *
 
 def read_dictionary_to_memory(dictionary_file_path):
     dictionary = None
+    doc_length_table = None
     with open(dictionary_file_path, mode="rb") as df:
-        dictionary = pickle.load(df)
-    return dictionary
+        data = pickle.load(df)
+        dictionary = data[0]
+        doc_length_table = data[1]
+    return (dictionary, doc_length_table)
 
 def find_posting_in_disk(dictionary, term, posting_file_path):
     with open(posting_file_path, mode="rb") as pf:
@@ -20,8 +23,8 @@ def find_posting_in_disk(dictionary, term, posting_file_path):
             return []
 
 def process_queries(dictionary_file, postings_file, file_of_queries, output_file_of_results):
-    dictionary = read_dictionary_to_memory(dictionary_file)
-    queries = parse_query(file_of_queries) 
+    (dictionary, doc_length_table) = read_dictionary_to_memory(dictionary_file)
+    queries = parse_query(file_of_queries)
     for query in queries:
         process_query_ltc(dictionary, postings_file, query)
 
@@ -31,7 +34,7 @@ def extract_docID(postings):
         unique_docs.add([pair[0] for pair in posting])
     return unique_docs
 
-# process_query_ltc takes in a list of words that represents a query, and outputs the 
+# process_query_ltc takes in a list of words that represents a query, and outputs the
 # ltc matrix
 def process_query_ltc(dictionary, postings, query):
     ltc_matrix = []
@@ -49,7 +52,7 @@ def get_freq_table_for_query(query):
         query_freq_table[word] += 1
     return query_freq_table
 
-# since the terms in the query_freq_table would never have a value of 
+# since the terms in the query_freq_table would never have a value of
 # 0, we can safely assume that math.log(0, 10) would never be an issue for us
 def calculate_log_tf(query_freq_table):
     log_tf = dict()
@@ -79,8 +82,8 @@ def calculate_tfidf_document(log_tf, idf_df, query):
 
     for word in query:
         cur_word = dict()
-        if word in log_tf and word in idf_df:
-            
+        # if word in log_tf and word in idf_df:
+
 '''
 Document
 
