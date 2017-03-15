@@ -10,7 +10,6 @@ import pickle
 from utility import *
 
 dictionary = dict()
-collection = []
 
 def process_documents(file_path, dictionary_file, postings_file):
     print('building index...')
@@ -21,7 +20,7 @@ def process_documents(file_path, dictionary_file, postings_file):
         new_file_path = file_path + str(filename)
         term_frequency_table = process_document(new_file_path)
         update_dictionary(term_frequency_table, filename)
-    write_to_disk(dictionary_file, postings_file)
+    write_to_disk(dictionary_file, postings_file, collection)
     print('...index is done building')
 
 # process_document processes the given file and computes a term frequency
@@ -51,7 +50,7 @@ def update_dictionary(term_frequency_table, doc_ID):
         postings_element = (doc_ID, term_frequency_table[term])
         dictionary[term].append(postings_element)
 
-def write_to_disk(dictionary_file, postings_file):
+def write_to_disk(dictionary_file, postings_file, collection):
     dict_to_disk = write_post_to_disk(dictionary, postings_file)
     dict_to_disk[COLLECTION_SIZE] = len(collection)
     write_dict_to_disk(dict_to_disk, dictionary_file)
