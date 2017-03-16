@@ -14,21 +14,21 @@ def read_dictionary_to_memory(dictionary_file_path):
         doc_length_table = data[1]
     return (dictionary, doc_length_table)
 
-def find_posting_in_disk(dictionary, term, posting_file_path):
-    with open(posting_file_path, mode="rb") as pf:
-        if term in dictionary:
-            pf.seek(dictionary[term].get_pointer())
-            return pickle.loads(pf.read(dictionary[term].length))
-        else:
-            return []
+def find_posting_in_disk(dictionary, term, postings_file):
+    if term in dictionary:
+        offset = dictionary[term].get_pointer() - postings_file.tell()
+        postings_file.seek(offset, 1)
+        return pickle.loads(postings_file.read(dictionary[term].length))
+    else:
+        return []
 
-def process_queries(dictionary_file, postings_file, file_of_queries, output_file_of_results):
+def process_queries(dictionary_file, postings_file_path, file_of_queries, output_file_of_results):
     (dictionary, doc_length_table) = read_dictionary_to_memory(dictionary_file)
     queries = parse_query(file_of_queries)
     results = []
-    for query in queries:
-        results.append(calculate_cosine_score(dictionary, doc_length_table, postings_file, query))
-        print()
+    with open(postings_file_path, 'rb') as postings_file:
+        for query in queries:
+            results.append(calculate_cosine_score(dictionary, doc_length_table, postings_file, query))
     write_to_output(results, output_file_of_results)
 
 def calculate_cosine_score(dictionary, doc_length_table, postings_file, query):
