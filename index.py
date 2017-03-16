@@ -9,8 +9,12 @@ import json
 import pickle
 from utility import *
 
+# Builds index for all documents in directory-of-documents and
+# writes the dictionary into dictionary-file and the postings into postings-file.
+
 dictionary = dict()
 
+# Builds index for all documents in file_path.
 def process_documents(file_path, dictionary_file, postings_file):
     print('building index...')
     all_files = filter(lambda filename: filename != ".DS_Store", os.listdir(file_path))
@@ -23,11 +27,11 @@ def process_documents(file_path, dictionary_file, postings_file):
         (term_frequency_table, doc_length) = process_document(new_file_path)
         update_dictionary(term_frequency_table, filename)
         doc_length_table[filename] = doc_length
-    write_to_disk(dictionary_file, doc_length_table, postings_file, collection)
+    write_to_disk(dictionary_file, postings_file, doc_length_table, collection)
     print('...index is done building')
 
 # process_document processes the given file and computes a term frequency
-# table for that file
+# table for that file and the length of the file.
 def process_document(file):
     term_frequency_table = dict()
 
@@ -41,13 +45,16 @@ def process_document(file):
                     if term not in term_frequency_table:
                         term_frequency_table[term] = 0
                     term_frequency_table[term] += 1
+    doc_length = calculate_doc_length(term_frequency_table.values())
+    return (term_frequency_table, doc_length)
 
+# Calculates the length of the log_tf vector for the document.
+def calculate_doc_length(term_frequencies):
     doc_length = 0
-    for tf in term_frequency_table.values():
+    for tf in term_frequencies:
         log_tf = calculate_log_tf(tf)
         doc_length += log_tf * log_tf
-    doc_length = math.sqrt(doc_length)
-    return (term_frequency_table, doc_length)
+    return math.sqrt(doc_length)
 
 # update_dictionary takes the term frequency table as well as the doc id
 # and updates the global dictionary after processing each document in
@@ -59,16 +66,14 @@ def update_dictionary(term_frequency_table, doc_ID):
         postings_element = (doc_ID, term_frequency_table[term])
         dictionary[term].append(postings_element)
 
-def write_to_disk(dictionary_file, doc_length_table, postings_file, collection):
+def write_to_disk(dictionary_file, postings_file, doc_length_table, collection):
     dict_to_disk = write_post_to_disk(dictionary, postings_file)
     dict_to_disk[COLLECTION_SIZE] = len(collection)
     write_dict_to_disk(dict_to_disk, doc_length_table, dictionary_file)
 
-def write_dict_to_disk(dict_to_disk, doc_length_table, dictionary_file):
-    with open(dictionary_file, mode="wb") as df:
-        data = [dict_to_disk, doc_length_table]
-        pickle.dump(data, df)
-
+# Writes postings to disk and gets dict_to_disk.
+# The tuple in each posting represents (doc ID, term freq)
+# The keys in dict_to_disk are doc_ids and values are Nodes.
 def write_post_to_disk(dictionary, postings_file):
     dict_to_disk = dict()
     with open(postings_file, mode="wb") as pf:
@@ -76,9 +81,11 @@ def write_post_to_disk(dictionary, postings_file):
             dict_to_disk[key] = Node(key, len(dictionary[key]), pf.tell(), pf.write(pickle.dumps(dictionary[key])))
     return dict_to_disk
 
-def disk_to_memory(dictionary_file):
-    with open(dictionary_file, mode="rb") as df:
-        return pickle.load(df)
+# Writes dictionary_file and doc_length_table to disk.
+def write_dict_to_disk(dict_to_disk, doc_length_table, dictionary_file):
+    with open(dictionary_file, mode="wb") as df:
+        data = [dict_to_disk, doc_length_table]
+        pickle.dump(data, df)
 
 def printDict(dictionary):
     for key in dictionary:

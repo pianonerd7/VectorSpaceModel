@@ -4,10 +4,12 @@ import math
 
 # Contains some constant variables and term-normalization function.
 
+K = 10
 empty_string = ''
 COLLECTION_SIZE = "COLLECTION_SIZE"
 stemmer = PorterStemmer()
-punctuations = ["''", '..', '--']
+# Some punctuations that should not be indexed.
+punctuations = ["''", '..', '--', '``']
 
 # Normalizes the given term.
 def normalize(term):
@@ -16,8 +18,10 @@ def normalize(term):
         return empty_string
     return term
 
+# Calculates log_tf.
 def calculate_log_tf(tf):
     return 1 + math.log(tf, 10)
 
+# Calculates inverse document frequency.
 def calculate_idf(collection_size, df):
     return math.log(collection_size/df, 10)

@@ -1,8 +1,10 @@
 import getopt
+import sys
 import pickle
 from queryParser import *
 from node import Node
 import math
+import heapq
 from utility import *
 
 def read_dictionary_to_memory(dictionary_file_path):
@@ -22,6 +24,8 @@ def find_posting_in_disk(dictionary, term, postings_file):
     else:
         return []
 
+# Runs all queries in file_of_queries on dictionary_file and postings_file_path
+# and write results into disk.
 def process_queries(dictionary_file, postings_file_path, file_of_queries, output_file_of_results):
     (dictionary, doc_length_table) = read_dictionary_to_memory(dictionary_file)
     queries = parse_query(file_of_queries)
@@ -31,6 +35,7 @@ def process_queries(dictionary_file, postings_file_path, file_of_queries, output
             results.append(calculate_cosine_score(dictionary, doc_length_table, postings_file, query))
     write_to_output(results, output_file_of_results)
 
+# Calculates the cosine score based on the algorithm described in lecture slides.
 def calculate_cosine_score(dictionary, doc_length_table, postings_file, query):
     score_dictionary = dict()
     collection_size = dictionary[COLLECTION_SIZE]
@@ -40,22 +45,34 @@ def calculate_cosine_score(dictionary, doc_length_table, postings_file, query):
         query_df = dictionary[query_term].get_doc_frequency()
         query_weight = calculate_query_weight(query_tf, query_df, collection_size)
         postings = find_posting_in_disk(dictionary, query_term, postings_file)
+        update_score_dictionary(postings, score_dictionary, query_weight)
+    return get_top_components(score_dictionary, doc_length_table)
 
-        for document in postings:
-            (doc_id, doc_tf) = document
-            doc_weight = calculate_log_tf(doc_tf)
-            if doc_id not in score_dictionary:
-                score_dictionary[doc_id] = 0
-            score_dictionary[doc_id] += query_weight * doc_weight
-    for (doc_id, score) in score_dictionary.items():
-        score_dictionary[doc_id] = score / doc_length_table[doc_id]
-    return sorted(score_dictionary, key=score_dictionary.get, reverse=True)[:10]
-    # Todo: Should change it to a maxheap instead
-
+# Calculates the ltc weight for the term in query.
 def calculate_query_weight(query_tf, query_df, collection_size):
     query_log_tf = calculate_log_tf(query_tf)
     query_idf = calculate_idf(collection_size, query_df)
     return query_log_tf * query_idf
+
+# Calculates the lnc weight for for all documents in postings
+# and updates their scores.
+def update_score_dictionary(postings, score_dictionary, query_weight):
+    for document in postings:
+        (doc_id, doc_tf) = document
+        doc_weight = calculate_log_tf(doc_tf)
+        if doc_id not in score_dictionary:
+            score_dictionary[doc_id] = 0
+        score_dictionary[doc_id] += query_weight * doc_weight
+
+# Normalizes the score for each document and returns the top K components.
+def get_top_components(score_dictionary, doc_length_table):
+    score_heap = []
+    # score_heap is a min-heap. So we need to negate score to simulate a 'max-heap'.
+    for (doc_id, score) in score_dictionary.items():
+        normalized_score = score / doc_length_table[doc_id]
+        heapq.heappush(score_heap, (-normalized_score, doc_id))
+    top_components = heapq.nsmallest(K, score_heap)
+    return [x[1] for x in top_components]
 
 def write_to_output(results, output_file_of_results):
     with open(output_file_of_results, mode="w") as of:
@@ -122,8 +139,6 @@ cos_normalization
 
 '''
 
-
-'''
 def usage():
     print ("usage: " + sys.argv[0] + " -d dictionary-file -p postings-file -q file-of-queries -o output-file-of-results")
 
@@ -149,6 +164,3 @@ if dictionary_file == None or postings_file == None or file_of_queries == None o
     sys.exit(2)
 
 process_queries(dictionary_file, postings_file, file_of_queries, output_file_of_results)
-'''
-
-process_queries("dictionary.txt", "postings.txt", "query.txt", "out.txt")
