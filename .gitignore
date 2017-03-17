@@ -7,3 +7,5 @@ __pycache__
 *.txt
 !ESSAY.txt
 !README.txt
+*.zip
+query
