@@ -11,6 +11,30 @@ Place your comments or requests here for Min to read.  Discuss your
 architecture or experiments in general.  A paragraph or two is usually
 sufficient.
 
+A lot of the code is recycled from HW2 to prevent reinventing the wheel. 
+Indexing is more or less the same, except that the document length is computed
+at indexing time to optimize computation time during searching. 
+
+Below is the psuedo code for cosine score calcuation:
+
+cosine_score:
+initialize a score_dictionary to store the score of each document
+// Calculate score:
+for each term t in query frequency table:
+    fetch postings list for t
+    calculate its weight (tf_idf)
+    for each document in the postings:
+        calculate its weight (log_tf since df = 1)
+        update the score of the document in score_dictionary
+        (score_dictionary[document] += weight of t * weight of the document
+// Normalization:
+for each document that appear in score_dictionary:
+    normalized score = score[document] / length_of_document <- get from doc_length_table
+    update score
+// Rank:
+Find the highest 10 scores in the score_dictionary
+
+
 == Files included with this submission ==
 
 List the files in your submission here and provide a short 1 line
@@ -56,6 +80,9 @@ assignment, because of the following reason:
 <Please fill in>
 
 I suggest that I should be graded as follows:
+
+We completed all the work and adhere to the policy stated above.
+
 
 <Please fill in>
 
