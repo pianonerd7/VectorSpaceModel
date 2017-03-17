@@ -95,3 +95,4 @@ Lecture notes
 Introduction to Information Retrieval (Textbook) : reference for essay questions
 https://janav.wordpress.com/2013/10/27/tf-idf-and-cosine-similarity/ : reference for cosine-similarity
 http://www.ics.uci.edu/~djp3/classes/2008_09_26_CS221/Lectures/Lecture26.pdf : reference for cosine-similarity
+http://people.eng.unimelb.edu.au/tcohn/comp90042/l3.pdf: phrasal query
