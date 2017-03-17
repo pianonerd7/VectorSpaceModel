@@ -1,8 +1,8 @@
-This is the README file for A0146123R-? submission
+This is the README file for A0146123R-A0163945W submission
 
 == Python Version ==
 
-We're using Python Version 3.5.2? for
+We're using Python Version 3.5.2/3.6.0 for
 this assignment.
 
 == General Notes about this assignment ==
@@ -17,11 +17,34 @@ List the files in your submission here and provide a short 1 line
 description of each file.  Make sure your submission's files are named
 and formatted correctly.
 
+ESSAY.txt
+- answers to the essay question.
+
+index.py 
+- reads every file in the reuter folder, indexes, and write to disk.
+
+node.py 
+- represents every dictionary object
+
+queryParser.py 
+- takes a query file and returns a list of list of words representing a 
+list of query
+
+README.txt
+- current file. Includes statement of individual work as well as general
+notes on the assignment. 
+
+search.py
+
+utility.py
+- contain helper methods and constant storing.
+
+
 == Statement of individual work ==
 
 Please initial one of the following statements.
 
-[X] I, A0146123R-?, certify that I have followed the CS 3245 Information
+[X] I, A0146123R-A0163945W, certify that I have followed the CS 3245 Information
 Retrieval class guidelines for homework assignments.  In particular, I
 expressly vow that I have followed the Facebook rule in discussing
 with others in doing the assignment and did not take notes (digital or
