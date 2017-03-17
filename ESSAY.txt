@@ -35,13 +35,14 @@ in the document. And because a longer document contains more words, it would tak
 compared to a shorter document.
 
 Our normalization disregards the document length and basically post normalization weighs documents of longer size
-as documents of shorter size. I think this is insignificant because as long as the user gets the documents that 
-fit their need, then it is fine. We don't need to ensure the absolutely best result. That also seem to be a very
-subjective thing to go after, since the user can be querying for anything.
+as documents of shorter size. Document length doesn't say much about how relevant a document is in respect to 
+the query. High frequency doesn't correlate to high relevance. I think our current normalization is fine because as long as 
+the user gets the documents that fit their need, then it is fine. We don't need to ensure the absolutely best result. 
+That also seem to be a very subjective thing to go after, since the user can be querying for anything.
 
-I believe the ltc.lnc scheme is sufficient. The only possible wrinkle is the lnc, where we don't account for 
+I believe the ltc.lnc scheme is sufficient. The only possible wrinkle is the lnc, where we don't incentivize for 
 low frequency words in the query. But I think it is insignificant, since the likelyhood have having a very long
-and verbose query is low for the reuters-21578.
+and verbose query is low for the reuters-21578, as most query will be short.
 
 
 3. Do you think zone or field parametric indices would be useful for practical search in the Reuters collection? 
