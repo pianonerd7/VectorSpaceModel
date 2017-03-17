@@ -6,6 +6,13 @@ clearly demarcate it in your code and allow this feature to be turned on or off 
 switch "-x" (where "-x" means to turn on the extended processing of phrasal queries). We will give a small 
 bonus to submissions that achieve this functionality correctly).
 
+We can use positional indices to help. So instead of what we are doing now, which is indexing the document
+for each term, we do that but also record the position in the document. In our dictionary, we used a node.py
+class to represent each dictionary value, we keep doing that, which keeps track of the term and the document
+frequency, but we should also create an object post_node.py wheere it stores the document_id of the term as 
+well as the offset of the positional index. When we have a phrasal query like "good sleep", then we just make 
+sure that within the top ranked documents, good is at position x, then sleep is at position x + 1 within
+that same document and that the position of good is before sleep. 
 
 
 2. Describe how your search engine reacts to long documents and long queries as compared to short documents 
@@ -35,6 +42,7 @@ subjective thing to go after, since the user can be querying for anything.
 I believe the ltc.lnc scheme is sufficient. The only possible wrinkle is the lnc, where we don't account for 
 low frequency words in the query. But I think it is insignificant, since the likelyhood have having a very long
 and verbose query is low for the reuters-21578.
+
 
 3. Do you think zone or field parametric indices would be useful for practical search in the Reuters collection? 
 Note: the Reuters collection does have metadata for each article but the quality of the metadata is not uniform, 
