@@ -42,7 +42,9 @@ That also seem to be a very subjective thing to go after, since the user can be 
 
 I believe the ltc.lnc scheme is sufficient. The only possible wrinkle is the lnc, where we don't incentivize for 
 low frequency words in the query. But I think it is insignificant, since the likelyhood have having a very long
-and verbose query is low for the reuters-21578, as most query will be short.
+and verbose query is low for the reuters-21578, as most query will be short since the documents in the collection
+itself is short. Additionally, if we are trying to implement it in such a way to convinence a certain group, then
+we are surely doing another group a dis-favor.
 
 
 3. Do you think zone or field parametric indices would be useful for practical search in the Reuters collection? 
